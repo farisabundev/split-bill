@@ -102,11 +102,10 @@ export const AddItem = (props: AddItemProps) => {
               <Button
                 key={person}
                 onClick={() => togglePersonInSplit(person)}
-                className={`px-3 py-1 rounded-full text-sm font-medium ${
-                  newExpense.splitAmong.includes(person)
+                className={`px-3 py-1 rounded-full text-sm font-medium ${newExpense.splitAmong.includes(person)
                     ? "bg-red-400 text-white"
                     : "bg-gray-200 text-gray-700 hover:bg-gray-300"
-                }`}
+                  }`}
               >
                 {person}
               </Button>

@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { Trash2, Calculator } from "lucide-react";
 import { Expense, NewExpense, Person, Settlement } from "./types";
 
@@ -8,6 +8,7 @@ import { PeopleList } from "./components/people-list";
 import { TaxFeeSetting } from "./components/tax-fee-setting";
 import { AddItem } from "./components/add-item";
 import { SplitBillTitleInput } from "./components/split-bill-title-input";
+import { ExpensesList } from "./components/expenses-list";
 
 export default function SplitBillApp() {
   const [splitBillTitle, setSplitBillTitle] = useState<string>("");
@@ -29,10 +30,11 @@ export default function SplitBillApp() {
     if (newPersonName.trim() && !people.includes(newPersonName.trim())) {
       const updatedPeople = [...people, newPersonName.trim()];
       setPeople(updatedPeople);
-      setNewExpense((prev) => ({
-        ...prev,
-        splitAmong: updatedPeople,
-      }));
+      // Disabled to match the LINE way
+      // setNewExpense((prev) => ({
+      //   ...prev,
+      //   splitAmong: updatedPeople,
+      // }));
       setNewPersonName("");
     }
   };
@@ -79,7 +81,7 @@ export default function SplitBillApp() {
         amount: "1",
         price: "",
         paidBy: people[0] ?? "",
-        splitAmong: [...people],
+        splitAmong: [],
       });
     }
   };
@@ -174,7 +176,7 @@ export default function SplitBillApp() {
     calculateSettlements();
 
   const totalExpenses = expenses.reduce(
-    (sum, expense) => sum + expense.amount,
+    (sum, expense) => sum + (expense.amount * expense.price),
     0
   );
 
@@ -213,80 +215,30 @@ export default function SplitBillApp() {
             addItem={addItem}
           />
 
-          {/* <TaxFeeSetting
-            taxRate={taxRate}
-            setTaxRate={setTaxRate}
-            serviceFeeRate={serviceFeeRate}
-            setServiceFeeRate={setServiceFeeRate}
-            totalExpenses={totalExpenses}
-            totalTax={totalTax}
-            totalServiceFee={totalServiceFee}
-            grandTotal={grandTotal}
-          /> */}
+          {expenses.length > 0 && (
+            <>
+              <ExpensesList
+                splitBillTitle={splitBillTitle}
+                expenses={expenses}
+                totalExpenses={totalExpenses}
+                taxRate={taxRate}
+                serviceFeeRate={serviceFeeRate}
+                grandTotal={grandTotal}
+                removeExpense={removeExpense}
+              />
 
-          <div className="mb-8">
-            <h3 className="text-lg font-semibold text-gray-700 mb-4">
-              {splitBillTitle || "Expenses"}
-              {" "}
-              {expenses.length > 0 && (
-                <span className="text-sm font-normal text-gray-600">
-                  (Subtotal: ${totalExpenses.toFixed(2)}
-                  {(taxRate > 0 || serviceFeeRate > 0) &&
-                    ` • Total with fees: ${grandTotal.toFixed(2)}`}
-                  )
-                </span>
-              )}
-            </h3>
-
-            {expenses.length === 0 ? (
-              <p className="text-gray-500 text-center py-8">
-                No expenses added yet
-              </p>
-            ) : (
-              <div className="space-y-3">
-                {expenses.map((expense) => (
-                  <div
-                    key={expense.id}
-                    className="bg-white border border-gray-200 rounded-lg p-4 flex items-center justify-between"
-                  >
-                    <div className="flex-1">
-                      <div className="flex items-center gap-3">
-                        <h4 className="font-medium text-gray-800">
-                          {expense.description}
-                        </h4>
-                        <span className="text-green-600 font-semibold">
-                          ${expense.price.toFixed(2)}
-                        </span>
-                      </div>
-                      <div className="text-sm text-gray-600 mt-1">
-                        Paid by{" "}
-                        <span className="font-medium">{expense.paidBy}</span> •
-                        Split among: {expense.splitAmong.join(", ")}
-                        {(taxRate > 0 || serviceFeeRate > 0) && (
-                          <span className="text-blue-600 ml-2">
-                            ($
-                            {(
-                              (expense.amount +
-                                (expense.amount * (taxRate + serviceFeeRate)) /
-                                  100) /
-                              expense.splitAmong.length
-                            ).toFixed(2)}{" "}
-                            per person incl. fees)
-                          </span>
-                        )}
-                      </div>
-                    </div>
-                    <button
-                      onClick={() => removeExpense(expense.id)}
-                      className="text-red-500 hover:text-red-700 ml-4"
-                    >
-                      <Trash2 className="w-4 h-4" />
-                    </button>
-                  </div>
-                ))}
-              </div>
-            )}
-          </div>
+              <TaxFeeSetting
+                taxRate={taxRate}
+                setTaxRate={setTaxRate}
+                serviceFeeRate={serviceFeeRate}
+                setServiceFeeRate={setServiceFeeRate}
+                totalExpenses={totalExpenses}
+                totalTax={totalTax}
+                totalServiceFee={totalServiceFee}
+                grandTotal={grandTotal}
+              />
+            </>
+          )}
 
           {/* {expenses.length > 0 && (
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
